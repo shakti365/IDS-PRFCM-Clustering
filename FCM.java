@@ -1,3 +1,8 @@
+/*
+Implementation of FCM Clustering Algortihm on NSL-KDD Dataset
+It also includes functions for implementing PRFCM clustering algortihm
+*/
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -10,9 +15,6 @@ class FCM{
     static Double m[][] = new Double[125974][2];            //membership matrix
     static Double m1[][] = new Double[125974][2];           //old membership matrix for iteration
     static Double v[][] = new Double[22545][42];            //test set
-    static int truecounter = 0;
-    static int falsecounter = 0;
-    static int totiteration = 0;
     static int truepositive = 0;
     static int truenegative = 0;
     static int falsepositive = 0;
@@ -21,43 +23,31 @@ class FCM{
     	double w = 0.0d, max = 0.0d;
         int rows = 125974;      //number of rows in train dataset
         int columns = 41;       //number of columns in train dataset
+        
         //train[][] stores the returned string array from getContentArray() 
         String train[][] = getContentArray("kddtrain_2class_normalized.csv", rows, columns + 1);
+        
         //double t[][] array stores the converted train[][] array from getConvertedArray()
         t = getConvertedArray(train, rows, columns + 1);
-        //for garbage collection
-        for (int i = 0; i < rows; i++) {
-            train[i] = null;
-        }
-        System.gc();
+        
         int rowtest = 22545;    //number of rows in test dataset
         int coltest = 41;       //number of columns in test dataset
+        
         //test[][] stores the returned string array from getContentArray() 
         String test[][] = getContentArray("KDDTest+_normalized_2.csv", rowtest, coltest + 1);
+        
         //double v[][] array stores the converted test[][] array from getConvertedArray()
         v = getConvertedArray(test, rowtest, coltest + 1);
+        
         //double c[][] array stores random cluster centers from getRandomInitialClusterCenter()
         c = getRandomInitialClusterCenter(t, rows, columns);
-        //double c[][] array stores updated cluster centers by KNN from getKNNUpdatesClusterCenter()
-        //c = getKNNUpdatedClusterCenter(c, rows, columns);
-        //int p[][] array stores the returned neighbours from getNeighbours()
-//        String position[][] = getContentArray("positionfinal_norm.csv", rows, 2);
-//        int pos[][] = getNeighbours(rows, 3);
-//        position = null;
-//        System.gc();
+        
         //double m[][] array stores the initialized membership
         m = initMembership(t, c, rows, columns);
         int ctr = 0;
         do {
             System.out.println("\nITERATION No.: " + ctr++);
 
-            //a1 & a2 values of alpha 1 and alpha 2
-            //double a1 = getAlpha(m, rows, 1);
-            //double a2 = getAlpha(m, rows, 2);
-
-           // m = getPenaltyReward(m, pos, rows, 2);
-            
-//            System.out.println("\n====CLUSTER CENTER UPDATION====");            
             c = getUpdatedClusterCenter(m, t, rows, columns);
 
             for (int i = 1; i < rows; i++) {
@@ -67,8 +57,6 @@ class FCM{
             }
 
             m = initMembership(t, c, rows, columns);
-            //double maxi = 0.0d, mini = m[1][1];
-            //m = getUpdatedMembership(t, c, pos, m, rows, columns, a1, a2, w, maxi, mini);
             
             for (int i = 1; i < rows; i++) {
                 for (int j = 0; j < 2; j++) {
@@ -76,17 +64,18 @@ class FCM{
                 }
 
             }
+
             for (int i = 1; i < rows; i++) {
                 for (int j = 0; j < 2; j++) {
-                    if (m1[i][j] > max);
-                    max = m1[i][j];
+                    if (m1[i][j] > max)
+                        max = m1[i][j];
                 }
             }
             
         }while(max > 0.0001);
         
-        
         int output;
+
         for(int i=1;i<rows;i++){
             if(m[i][0]>m[i][1])
             {
@@ -97,25 +86,19 @@ class FCM{
             }
             if((output == 1)&&(t[i][columns] == 1)){
                 truepositive++;
-                truecounter++;
-                totiteration++;
             } else if((output == 1)&&(t[i][columns] == 2)){
                 falsepositive++;
-                falsecounter++;
-                totiteration++;
             } else if((output == 2)&&(t[i][columns] == 2)){
                 truenegative++;
-                truecounter++;
-                totiteration++;
             } else if((output == 2)&&(t[i][columns] == 1)){
                 falsenegative++;
-                falsecounter++;
-                totiteration++;
             }
                 
         }
-        System.out.println(truepositive+"   "+falsepositive+"  "+truenegative+"  "+falsenegative);
-        System.out.println(truecounter+"    "+falsecounter+"    "+totiteration);        
+        System.out.println("truepositive: "+truepositive);
+        System.out.println("falsepositive: "+falsepositive);
+        System.out.println("falsenegative: "+falsenegative);
+        System.out.println("truenegative: "+truenegative);      
     }
 
         /**
@@ -169,7 +152,7 @@ class FCM{
     }
 
     /**
-     * getInitialClusterCenter() takes the train set and returns randomly
+     * getRandomInitialClusterCenter() takes the train set and returns randomly
      * generated cluster centers Arguments: TrainArray: Double array containing
      * train set to find cluster from rows: number of rows columns: number of
      * columns Return: ClusterCenter: Double[2][columns] array containing
@@ -282,7 +265,6 @@ class FCM{
     /**
      * getUpdatedMembership()    returns the updated value of membership matrix using PRFCM 
      * Parameters:
-     
      *  t[][]:          training set
      *  c[][]:          cluster center
      *  pos[][]:        nearest neighbour positions
@@ -330,7 +312,6 @@ class FCM{
         return m;
     }
     private static Double[][] getRewardPenalty(double w, Double m[][], int pos[][], int t, double a1, double a2, int k){
-    
         Double p[][] = new Double[k][2];
         Double reward[][] = new Double[2][2];
         reward[0][0] = 0.0d;

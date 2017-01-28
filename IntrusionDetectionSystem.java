@@ -1,5 +1,5 @@
 /*
- * Novel Intrusion Detection System
+ * Intrusion Detection System using Novel PRFCM Clustering Algortihm
  * The following project is divided into 2 phases and 5 major parts
  * Training Phase
  *  1. Intialisation of Cluster Centers
@@ -12,7 +12,7 @@
  * Input:
  *  1. KDD trainset
  *  2. KDD testset
- *  3. K nearest neighbours obtained from.........
+ *  3. K nearest neighbours of training samples
  * Output:
  *  1. Confusion matrix for clustered trainset
  *  2. Confusion matrix for testset
@@ -51,38 +51,38 @@ public class IntrusionDetectionSystem {
     static int forj1false = 0;
     static int forj1notmatch = 0;
     static double rangeofweight;
+
     public static void main(String[] args) {
-        // TODO code application logic here
+    
         double w = 0.5d, max = 0.0d;
         int rows = 125974;      //number of rows in train dataset
         int columns = 41;       //number of columns in train dataset
+        
         //train[][] stores the returned string array from getContentArray() 
         String train[][] = getContentArray("kddtrain_2class_normalized.csv", rows, columns + 1);
+        
         //double t[][] array stores the converted train[][] array from getConvertedArray()
         t = getConvertedArray(train, rows, columns + 1);
-        //for garbage collection
-        for (int i = 0; i < rows; i++) {
-            train[i] = null;
-        }
-        System.gc();
+        
         int rowtest = 22545;    //number of rows in test dataset
         int coltest = 41;       //number of columns in test dataset
+        
         //test[][] stores the returned string array from getContentArray() 
         String test[][] = getContentArray("KDDTest+_normalized_2.csv", rowtest, coltest + 1);
+        
         //double v[][] array stores the converted test[][] array from getConvertedArray()
         v = getConvertedArray(test, rowtest, coltest + 1);
+        
         //double c[][] array stores random cluster centers from getRandomInitialClusterCenter()
         c = getRandomInitialClusterCenter(t, rows, columns);
-        //double c[][] array stores updated cluster centers by KNN from getKNNUpdatesClusterCenter()
-        //c = getKNNUpdatedClusterCenter(c, rows, columns);
-        //int p[][] array stores the returned neighbours from getNeighbours()
-//        String position[][] = getContentArray("positionfinal_norm.csv", rows, 2);
+        
         int pos[][] = getNeighbours(rows, 3);
-//        position = null;
-//        System.gc();
+
         //double m[][] array stores the initialized membership
         m = initMembership(t, c, rows, columns);
+
         int ctr = 0;
+
         do {
             System.out.println("\nITERATION No.: " + ctr++);
 
@@ -90,9 +90,6 @@ public class IntrusionDetectionSystem {
             double a1 = getAlpha(m, rows, 1);
             double a2 = getAlpha(m, rows, 2);
 
-           // m = getPenaltyReward(m, pos, rows, 2);
-            
-//            System.out.println("\n====CLUSTER CENTER UPDATION====");            
             c = getUpdatedClusterCenter(m, t, rows, columns);
 
             for (int i = 1; i < rows; i++) {
@@ -101,8 +98,8 @@ public class IntrusionDetectionSystem {
                 }
             }
 
-           // m = initMembership(t, c, rows, columns);
             double maxi = 0.0d, mini = m[1][1];
+
             m = getUpdatedMembership(t, c, pos, m, rows, columns, a1, a2, w, maxi, mini);
             
             for (int i = 1; i < rows; i++) {
@@ -122,6 +119,7 @@ public class IntrusionDetectionSystem {
         
         
         int output;
+
         for(int i=1;i<rows;i++){
             if(m[i][0]>m[i][1])
             {
@@ -132,25 +130,19 @@ public class IntrusionDetectionSystem {
             }
             if((output == 1)&&(t[i][columns] == 1)){
                 truepositive++;
-                truecounter++;
-                totiteration++;
             } else if((output == 1)&&(t[i][columns] == 2)){
                 falsepositive++;
-                falsecounter++;
-                totiteration++;
             } else if((output == 2)&&(t[i][columns] == 2)){
                 truenegative++;
-                truecounter++;
-                totiteration++;
             } else if((output == 2)&&(t[i][columns] == 1)){
                 falsenegative++;
-                falsecounter++;
-                totiteration++;
             }
                 
         }
-        System.out.println(truepositive+"   "+falsepositive+"  "+truenegative+"  "+falsenegative);
-        System.out.println(truecounter+"    "+falsecounter+"    "+totiteration);
+        System.out.println("truepositive: "+truepositive);
+        System.out.println("falsepositive: "+falsepositive);
+        System.out.println("falsenegative: "+falsenegative);
+        System.out.println("truenegative: "+truenegative);  
         
         
         truecounter = 0;
@@ -162,6 +154,7 @@ public class IntrusionDetectionSystem {
         falsenegative = 0;
         
         setValidity(rows, 200);
+
         Double valid[] = getValidity(rows, 1);
         
         for(int whole=1; whole<rowtest; whole++){
@@ -193,12 +186,6 @@ public class IntrusionDetectionSystem {
                         output = Combination(newrule);
                         showResult(output, whole,1);
                     }
-//                if(m[minpos][0]>m[minpos][1])
-//                    output = 1;
-//                else
-//                    output = 2;
-//                showResult(output, whole);
-                
             } else {
                 Double newrule[][] = getBestRuleSet(d, whole, j, min, max1, valid, rows, columns);
                 output = Combination(newrule);
@@ -212,11 +199,6 @@ public class IntrusionDetectionSystem {
         System.out.println("TRUE negative: "+truenegative);
         System.out.println("false postive: "+falsepositive);
         System.out.println("false negative: "+falsenegative);
-        System.out.println("TOTAL j=1: "+forj1);
-        System.out.println("TOTAL j=1 still j=1: "+forj1still1);
-        System.out.println("TOTAL j=1 TRUE: "+forj1true);
-        System.out.println("TOTAL j=1 FALSE: "+forj1false);
-        System.out.println("number of time minpos is not selected: "+forj1notmatch);
     }
 
     /**
@@ -430,7 +412,6 @@ public class IntrusionDetectionSystem {
     /**
      * getUpdatedMembership()    returns the updated value of membership matrix using PRFCM 
      * Parameters:
-     
      *  t[][]:          training set
      *  c[][]:          cluster center
      *  pos[][]:        nearest neighbour positions
@@ -452,16 +433,7 @@ public class IntrusionDetectionSystem {
                 Double reward[][] = getRewardPenalty(w, m, pos, i, a1, a2, 3);
                 m[i][0] = (Math.pow((den1 + reward[0][0] - reward[0][1]), -1)) / (Math.pow((den1 + reward[0][0] - reward[0][1]), -1) + Math.pow((den2 + reward[1][1] - reward[1][0]), -1));
                 m[i][1] = (Math.pow((den2 + reward[1][1] - reward[1][0]), -1)) / (Math.pow((den1 + reward[0][0] - reward[0][1]), -1) + Math.pow((den2 + reward[1][1] - reward[1][0]), -1));
-//                double eps = 0.000000001d;
-//                if(m[i][0] < 0.0d)
-//                    m[i][0] = eps;
-//                if(m[i][1] < 0.0d)
-//                    m[i][1] = eps;
-//                if(m[i][0] > 1.0d)
-//                    m[i][0] = 1.0d - eps; 
-//                if(m[i][1] > 1.0d)
-//                    m[i][1] = 1.0d - eps;
-//                
+
                 if(m[i][0] < minimum)
                     minimum = m[i][0];
                 if(m[i][1] < minimum)
@@ -470,21 +442,11 @@ public class IntrusionDetectionSystem {
                     maximum = m[i][0];
                 if(m[i][1] > maximum)
                     maximum = m[i][1];
-//                    m[i][0] = Math.abs(m[i][0]) / (Math.abs(m[i][0]) + Math.abs(m[i][1]) );
-//                    m[i][1] = Math.abs(m[i][1]) / (Math.abs(m[i][0]) + Math.abs(m[i][1]) );
-                
-//                m[i][0] = (Math.pow((den1 - reward[0][0] + reward[1][0]), -1)) / (Math.pow((den1 - reward[0][0] + reward[1][0]), -1) + Math.pow((den2 - reward[0][1] + reward[1][1]), -1));
-//                m[i][1] = (Math.pow((den2 + reward[1][1] - reward[0][1]), -1)) / (Math.pow((den1 + reward[1][0] - reward[0][0]), -1) + Math.pow((den2 + reward[1][1] - reward[0][1]), -1));
-
-                
-//                m[i][0] = (Math.pow((den1 + reward[0][0]), -1)) / (Math.pow((den1 + reward[0][0]), -1) + Math.pow((den2 + reward[0][1]), -1));
-//                m[i][1] = (Math.pow((den2 + reward[1][1]), -1)) / (Math.pow((den1 + reward[1][0]), -1) + Math.pow((den2 + reward[1][1]), -1));
-             
-        
         }  
         m = normalize(m, maximum, minimum, rows);
         return m;
     }
+
     private static Double[][] normalize(Double m[][], double max, double min, int rows){
         for(int i = 1; i < rows; i++){
             if(m[i][0] == min)
@@ -529,92 +491,6 @@ public class IntrusionDetectionSystem {
             reward[0][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(1.0d - a1));
             reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
             reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(1.0d - a2));
-//            if(m[t][0]>m[t][1]){
-//                if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(a2));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(a1));
-//                }
-//                else if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a2));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a1));
-//                }
-//            }
-//            else if(m[t][0]<m[t][1]){
-//                if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a2));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a1));
-//                }
-//                else if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a2));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a1));
-//                }
-//            }
-            
-//            if(m[t][0]>m[t][1]){
-//                if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(a2));
-//                }
-//                else if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(a2));
-//                }
-//            }
-//            else if(m[t][0]<m[t][1]){
-//                if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(a2));
-//                }
-//                else if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * (1.0d - p[i][0]) * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * (1.0d - p[i][1]) * Math.log(a2));
-//                }
-//            }
-            
-//            if(m[t][0]>m[t][1]){
-//                if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 1) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 1) * w * p[i][0] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                }
-//                else if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 1) * w * p[i][1] * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 1) * w * p[i][1] * Math.log(a2));
-//                }
-//            }
-//            else if(m[t][0]<m[t][1]){
-//                if(p[i][0] < p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 1) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 1) * w * p[i][0] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 2) * w * p[i][1] * Math.log(a2));
-//                }
-//                else if(p[i][0] > p[i][1]){
-//                    reward[0][0] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a1));
-//                    reward[0][1] += (Math.pow(-1, 2) * w * p[i][0] * Math.log(a2));
-//                    reward[1][0] += (Math.pow(-1, 1) * w * p[i][1] * Math.log(a1));
-//                    reward[1][1] += (Math.pow(-1, 1) * w * p[i][1] * Math.log(a2));
-//                }
-//            }
         }
         return reward;
     }
