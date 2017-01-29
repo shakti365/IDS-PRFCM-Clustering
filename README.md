@@ -27,6 +27,7 @@ The following results show the performance of PRFCM clustering over FCM clusteri
 
 ![alt tag](https://github.com/shakti365/IDS-PRFCM-Clustering/blob/master/resources/f2d535ba8c6818c945eede519011e995-original.jpg) 
 
+![alt tag](https://github.com/shakti365/IDS-PRFCM-Clustering/blob/master/resources/barchart.png)
 ## Authors
 
 * **Partha Ghosh**
