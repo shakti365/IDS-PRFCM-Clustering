@@ -15,6 +15,15 @@ modified to incorporate the penalty and reward term by which it can overcome the
 
 ![alt tag](https://github.com/shakti365/IDS-PRFCM-Clustering/blob/master/resources/PRFCM_objfun.png)
 
+### Usage
+
+- Clone this repository
+- Download the data from [this link](https://drive.google.com/open?id=1RERbch_-SzJpjmW19V7jlEj64qmiYqvv)
+- Make sure you have Java installed
+- To run the PRFCM clustering compile and execute `IntrusionDetectionSystem.java` file
+- To run the FCM clustering compile and execute `FCM.java` file
+- (Optional) In order to re-create the auxillary files use the `NearestNeighbour.java` file
+
 ### Dataset
 
 The experiments are performed on NSL-KDD Train and Test Dataset. These dataset were pre-processed and normalized before use. It can be obtained from the following source. 
